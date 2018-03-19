@@ -1,5 +1,7 @@
 # A Bot Suggestion
 
+(prototype, does not actually vote)
+
 ```
 // run
 node index
