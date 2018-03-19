@@ -43,7 +43,10 @@ examples:
    - if the number of avg posts per day increases/decreases, all following parameters will be adjusted accordingly and automatically
 
 
-- we never waste voting power
+# Advantages
+
+- we never waste voting power (bot never reaches 100% as long as there's a post to vote)
+- posts won't suffer low VP (~80%)
 - category min/max votes can be adjusted to
     - avoid contributions piling up (lower votes)
     - slow the bot down (higher votes)
