@@ -7,6 +7,7 @@ let posts = helper.generateRandomPosts(1000);
 let botVP = 100;
 let timePassed = 0; // minutes
 let postIndex = 0;
+
 setInterval(() => {
   if (postIndex < posts.length) {
     if (botVP >= 99) {
