@@ -1,14 +1,14 @@
 const helper = require('./helper');
 
-const interval = 10; // seconds
+const postCount = process.env.BOT_POST_COUNT || 1000;
+const interval = process.env.BOT_INTERVAL_SECONDS || 10; // seconds
 const recoveryPerInterval = (interval) * (20 / 24 / 60); // % VP
 
-let posts = helper.generateRandomPosts(1000);
+let posts = helper.generateRandomPosts(postCount);
 let botVP = 100;
-let timePassed = 0; // minutes
 let postIndex = 0;
 
-setInterval(() => {
+const run = () => {
   if (postIndex < posts.length) {
     if (botVP >= 99) {
       let post = posts[postIndex];
@@ -19,7 +19,7 @@ setInterval(() => {
       // vote
       botVP -= decreaseVP;
 
-      console.log('Vote post: ' + postIndex);
+      console.log('Vote post: ' + (postIndex + 1) + '/' + postCount);
       console.log('Category: ' + post.category);
       console.log('Score: ' + post.score + '/100');
       console.log('Vote weight: ' + postVoteWeight.toFixed(3) + '%');
@@ -27,7 +27,6 @@ setInterval(() => {
       console.log('Recovery time: ' + recoveryTime.toFixed(3) + ' minutes');
       console.log('');
 
-      timePassed += recoveryTime;
       postIndex++;
     } else {
       console.log('Voting Power to low: ' + botVP.toFixed(3));
@@ -35,4 +34,7 @@ setInterval(() => {
     }
     botVP += recoveryPerInterval;
   }
-}, interval * 1000);
+};
+
+run();
+setInterval(run, interval * 1000);
