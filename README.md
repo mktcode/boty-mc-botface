@@ -1,3 +1,12 @@
+# A Bot Suggestion
+
+```
+// run
+node index
+```
+
+# Idea
+
 - VP checked in a very short interval (1-5 minutes)
 - bot votes next (oldest) approved and unvoted contribution once it reaches 99% VP (yes, only one!)
 - waits until VP reaches 99% again, votes next one in line
