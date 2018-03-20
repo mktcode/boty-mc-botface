@@ -1,6 +1,6 @@
 # A Bot Suggestion
 
-(prototype, does not actually vote)
+(prototype, does not actually do anything... just some calculations and outputs a pseudo log)
 
 ```
 // run
