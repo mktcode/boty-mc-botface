@@ -52,3 +52,4 @@ examples:
     - slow the bot down (higher votes)
 - we could display when the next vote will happen
 - we could display the number in line for every post
+- ...
