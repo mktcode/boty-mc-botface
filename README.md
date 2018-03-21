@@ -17,7 +17,7 @@ export BOT_POST_COUNT=100
 
 # Idea
 
-- VP checked in a very short interval (1)
+- VP checked in a very short interval (1 min)
 - bot votes next (oldest) approved and unvoted contribution once it reaches 99% VP (yes, only one!)
 - waits until VP reaches 99% again, votes next one in line
 
