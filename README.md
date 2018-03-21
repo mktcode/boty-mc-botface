@@ -4,15 +4,7 @@ Prototype, concept is not mature but maybe promising...
 
 ```
 // run
-node index
-```
-
-```
-// set interval
-export BOT_INTERVAL_SECONDS=60
-
-// number of post stubs to generate
-export BOT_POST_COUNT=100
+node bot
 ```
 
 # Idea
