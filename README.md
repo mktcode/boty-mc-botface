@@ -1,6 +1,6 @@
 # A Bot Suggestion
 
-(prototype, does not actually vote)
+Prototype, concept is not mature but maybe promising...
 
 ```
 // run

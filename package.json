@@ -1,0 +1,24 @@
+{
+  "name": "utopian-bot",
+  "version": "1.0.0",
+  "description": "(prototype, does not actually vote)",
+  "main": "index.js",
+  "dependencies": {
+    "mongoose": "^5.0.11",
+    "steem": "^0.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mktcode/boty-mc-botface.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mktcode/boty-mc-botface/issues"
+  },
+  "homepage": "https://github.com/mktcode/boty-mc-botface#readme"
+}
