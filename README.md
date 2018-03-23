@@ -19,7 +19,7 @@ node bot
     - Calculated based on min and max values per category, review score and global min and max values.
     - If contributions pile up or get less, the bot speeds up or slows down with them by lowering or increasing the weights.
     - Weight gets multiplied by the percentage of deviation: Actual number of posts waiting in line and desired number X.
-- Can be fine-tuned to the specific situation.
+- Can be fine-tuned to the specific situation.  
 
 # Scenarios
 
@@ -33,7 +33,16 @@ What if there's no new approved post for over 24h?
 - 25 % heigher votes = 25 % more often the minimum VP is reached
 - and votes take 20 % longer to recover in general
 
-# Bot status on platform frontend:
+# Adjusting / Fine-Tuning
+
+- length of wait list
+- min/max voting power
+- min/max global weights 
+- min/max category weights
+- vote interval
+- automatically set base values based on statistics 
+
+# Bot live status on platform frontend:
 
 - 103 Posts waiting in line.
 - 36 other contributions before yours will be upvoted. Est. time: 8 hours
