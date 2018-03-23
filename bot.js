@@ -19,14 +19,15 @@ const maximumVotingPower = process.env.BOT_MAX_VOTING_POWER || 99.93;
 
 // force vote if next post gets older than that
 // should never really happen, but could also be set to a much lower value if possible
-const maxPostAgeForVotes = 6 * 24; // hours
-
-const globalMinimumVoteWeight = 1;
-const globalMaximumVoteWeight = 50;
+const maxPostAgeForVotes = process.env.BOT_MAX_POST_AGE || 6 * 24; // hours
 
 // the deviation amplifier can adjust how "strong" voting weights will be adjusted automatically,
 // in relation to the deviation between the desired and the actual wait list.
-const deviationAmplifier = 1;
+const deviationAmplifier = process.env.BOT_DEVIATION_AMPLIFIER || 1;
+
+// global weight boundaries, applied after all adjustments
+const globalMinimumVoteWeight = process.env.BOT_GLOBAL_MIN_VOTE_WEIGHT || 1;
+const globalMaximumVoteWeight = process.env.BOT_GLOBAL_MAX_VOTE_WEIGHT || 50;
 
 // TODO: use API instead of direct DB access
 mongoose.connect('mongodb://localhost/utopian-io');
@@ -58,6 +59,7 @@ db.once('open', () => {
         console.log('Not enough posts waiting for an upvote. (' + nextPostToUpvote.length + '/' + waitListSize + ')');
 
         // force vote if next post gets too old
+        // TODO: maybe this should even overrule minimum voting power... ?
         if (new Date(nextPostToUpvote.created).getTime() < (new Date()).getTime() - (maxPostAgeForVotes * 60 * 60 * 1000)) {
           console.log('Force vote because post gets to old. (' + nextPostToUpvote.created + ')');
           castVote = true;
