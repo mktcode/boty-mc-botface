@@ -1,6 +1,8 @@
 const steem = require('steem');
 const categories = require('./categories');
 
+const DEBUG = process.env.BOT_DEBUG || true;
+
 const helper = {
   getVoteWeightForPost(post) {
     let min = categories.limits[post.category].min;
@@ -38,16 +40,36 @@ const helper = {
       'json_metadata.score': { $ne : null },
       author: { $ne: voterAccount }, // prevent self-voting
       created: {
-        // $gte: new Date((new Date()).getTime() - 6*60*60*1000).toISOString()
-        $gte: new Date((new Date()).getTime() - 6*60*60*1000).toISOString()
+        // get all posts between now-6h and now-6d
+        $lte: new Date((new Date()).getTime() - 6*60*60*1000).toISOString(),
+        $gte: new Date((new Date()).getTime() - 6*60*60*24*1000).toISOString(),
       }
     }).sort({created: 1}).exec();
   },
+  getStatsFromLastWeek(startDate, endDate) {
+    return {
+      votedPostsNum: 500,
+      averageVotingWeight: 1300,
+      averageScore: 75,
+    };
+  },
   upvotePost(voter, key, post, weight) {
     return new Promise((resolve, reject) => {
-      steem.broadcast.vote(key, voter, post.author, post.permlink, weight * 100, (err, result) => {
+      steem.api.getActiveVotes(post.author, post.permlink, function(err, activeVotes) {
         if (!err) {
-          resolve(result);
+          // TODO: check if already voted
+          if (!DEBUG) {
+            steem.broadcast.vote(key, voter, post.author, post.permlink, weight * 100, (err, result) => {
+              if (!err) {
+                resolve(result);
+              } else {
+                reject(err);
+              }
+            });
+          } else {
+            console.log('##### DEBUG MODE: Not actually voted! #####');
+            resolve();
+          }
         } else {
           reject(err);
         }
