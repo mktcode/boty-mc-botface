@@ -39,8 +39,9 @@ What if there's no new approved post for over 24h?
 - min/max voting power
 - min/max global weights 
 - min/max category weights
+- voting weight adjustment amplifier
 - vote interval
-- automatically set base values based on statistics 
+- automatically set base values based on statistics (not implemented)
 
 # Bot live status on platform frontend:
 
