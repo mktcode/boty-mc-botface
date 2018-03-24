@@ -31,7 +31,7 @@ What if there's no new approved post for over 24h?
 - the voting weights have automatically increased by 25 % by now... 
 - slowing the bot down for to let the wait list fill up.
 - 25 % heigher votes = 25 % more often the minimum VP is reached
-- and votes take 20 % longer to recover in general
+- and votes take 25 % longer to recover in general
 
 # Adjusting / Fine-Tuning
 
