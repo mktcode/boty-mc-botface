@@ -36,13 +36,15 @@ const db = mongoose.connection;
 // TODO: add more verbose logs
 
 // So, let's connect to the db...
+console.log('Connecting to DB.');
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
   const posts = mongoose.model('post', postSchema);
   // pull some data
+  console.log('Pulling data.');
   Promise.all([
     helper.getCurrentVotingPower(botAccountName, true),
-    helper.getPostsWaitingForUpvote(posts, botAccountName)
+    helper.getPostsWaitingForUpvote(posts, botAccountName),
   ]).then(values => {
     const currentVotingPower = values[0];
     const postsWaitingForUpvote = values[1];
@@ -50,13 +52,14 @@ db.once('open', () => {
 
     let castVote = false;
 
+    console.log('Check voting conditions...');
     // check voting power first
     if (currentVotingPower >= minimumVotingPower) {
       // then check if there are enough posts waiting, to make some calculations based on them
       if (postsWaitingForUpvote.length >= waitListSize) {
         castVote = true;
       } else {
-        console.log('Not enough posts waiting for an upvote. (' + nextPostToUpvote.length + '/' + waitListSize + ')');
+        console.log('Not enough posts waiting for an upvote. (' + postsWaitingForUpvote.length + '/' + waitListSize + ')');
 
         // force vote if next post gets too old
         // TODO: maybe this should even overrule minimum voting power... ?
@@ -66,7 +69,7 @@ db.once('open', () => {
         } else {
           // force vote if voting power gets to high
           if (currentVotingPower >= maximumVotingPower) {
-            console.log('Force vote because Voting Power gets to high. (' + currentVotingPower + '/' + maximumVotingPower + ')');
+            console.log('Force vote because Voting Power gets to high. (' + currentVotingPower.toFixed(2) + '/' + maximumVotingPower + ')');
             castVote = true;
           } else {
             console.log('No post to upvote. No reason to force.');
@@ -95,12 +98,14 @@ db.once('open', () => {
       if (voteWeight > globalMaximumVoteWeight) voteWeight = globalMaximumVoteWeight;
 
       console.log('Voting on https://utopian.io/utopian-io/@' + nextPostToUpvote.author + '/' + nextPostToUpvote.permlink);
-      console.log('At ' + currentVotingPower + '% Voting Power and ' + voteWeight + ' Voting Weight');
+      console.log('At ' + currentVotingPower.toFixed(2) + '% Voting Power and ' + voteWeight.toFixed(2) + ' % Voting Weight (multiplier: ' + votingWeightMultiplier + ')');
       helper.upvotePost(botAccountName, botKey, nextPostToUpvote, voteWeight * 100).then(() => {
         if (!DEBUG) {
           // TODO: post comment
         }
       }).catch(err => console.log(err));
     }
+
+    process.exit();
   }).catch(err => console.log(err));
 });

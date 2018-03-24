@@ -35,23 +35,35 @@ const helper = {
     });
   },
   getPostsWaitingForUpvote(posts, voterAccount) {
-    return posts.find({
-      reviewed: true,
-      'json_metadata.score': { $ne : null },
-      author: { $ne: voterAccount }, // prevent self-voting
-      created: {
-        // get all posts between now-6h and now-6d
-        $lte: new Date((new Date()).getTime() - 6*60*60*1000).toISOString(),
-        $gte: new Date((new Date()).getTime() - 6*60*60*24*1000).toISOString(),
-      }
-    }).sort({created: 1}).exec();
+    let i = 0;
+    let result = [];
+    while (i < 100) {
+      result.push({author: 'test', permlink: 'test', category: 'development', created: '2018-03-23 00:03:45', score: 50});
+      i++;
+    }
+    return result;
+
+    // return posts.find({
+    //   reviewed: true,
+    //   'json_metadata.score': { $ne : null },
+    //   author: { $ne: voterAccount }, // prevent self-voting
+    //   created: {
+    //     // get all posts between now-6h and now-6.5d
+    //     $lte: new Date((new Date()).getTime() - 6*60*60*1000).toISOString(),
+    //     $gte: new Date((new Date()).getTime() - 6.5*60*60*24*1000).toISOString(),
+    //   }
+    // }).sort({created: 1}).exec();
   },
-  getStatsFromLastWeek(startDate, endDate) {
-    return {
-      votedPostsNum: 500,
-      averageVotingWeight: 1300,
-      averageScore: 75,
-    };
+  getStatsFromPast(startDate, endDate) {
+    return new Promise((resolve, reject) => {
+      const statsFromPast = {
+        votedPostsTotal: 500,
+        votedPostsPerDay: 71.4,
+        averageVotingWeight: 1300, // actual used voting weight
+        averageScore: 75,
+      };
+      resolve(statsFromPast);
+    });
   },
   upvotePost(voter, key, post, weight) {
     return new Promise((resolve, reject) => {
