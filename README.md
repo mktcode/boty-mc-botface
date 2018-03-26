@@ -27,16 +27,16 @@ Wait List = 100
 
 **The bot has voted on a post. There are now only 99 (while desired value X is 100) on the wait list. So the bot will wait for another post to get approved. What if there's no new approved post for over 24h?**
 
-- the voting power triggers the max value (let's say 99.9 %) maybe 15 times (without reaching 100 %!): forces 15 votes, 84 posts left.
-- 10 post reach the maximum date: forces 10 votes, 74 left "less competition"
-- the voting weights have automatically increased by 26 % by now... 
-- slowing the bot down for to let the wait list fill up.
-- 26 % heigher votes = 26 % more often the minimum VP is reached
+- the voting power reaches its max value (let's say 99.9 %) maybe 15 times (without ever reaching 100 % !): this forces 15 votes, 84 posts left.
+- 10 post reach the maximum date: forces 10 votes, 74 left
+- "less competition" -> the voting weights have automatically increased by 26 % by now... 
+- ...slowing the bot down to let the wait list fill up again.
+- 26 % heigher votes = minimum voting power (let's say 99 %) is reached more often
 - and votes take 26 % longer to recover in general
 
 **The bot is voting as expected because there are constantly over 100 posts in the wait list. What if posts get more and more, pile up to 200 in the wait list and the bot can't keep up?**
 
-- 101/100 posts already means the next upvote will be decreased by 1%, recovery of VP will be 1% faster, next post can be upvoted 1% earlier.
+- 101/100 posts already means the next upvote will be decreased by 1%, recovery of voting power will be 1% faster, next post can be upvoted 1% earlier.
 - 120/100: next vote -20 %, etc...
 - 200/100 means 100% more posts than desired, vote weight will be reduced by 100% (global min weight of 1% will be used, category based limits could also be used or new ones added for that scenario).
 - To reach 200/100 a dramatic sudden increase in approved posts would be necessary, so that the gradual decrease of voting weights (from 100 % all the way down to 1 %) is not fast enough. Hopefully quite unlikely, the larger we set the desired wait list (maybe 500) the more unlikely.
