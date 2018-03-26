@@ -23,15 +23,22 @@ node bot
 
 # Scenarios
 
-The bot has voted on a post. There are now only 99 (while desired value X is 100) on the wait list. 
-What if there's no new approved post for over 24h?
+**The bot has voted on a post. There are now only 99 (while desired value X is 100) on the wait list. So the bot will wait for another post to get approved. What if there's no new approved post for over 24h?**
 
-- the voting power triggers the max value maybe 15 times (without reaching 100 %!): forces 15 votes, 85 posts left.
-- 10 post reach the maximum date: forces 10 votes, 75 left "less competition"
-- the voting weights have automatically increased by 25 % by now... 
+- the voting power triggers the max value (let's say 99.9 %) maybe 15 times (without reaching 100 %!): forces 15 votes, 84 posts left.
+- 10 post reach the maximum date: forces 10 votes, 74 left "less competition"
+- the voting weights have automatically increased by 26 % by now... 
 - slowing the bot down for to let the wait list fill up.
-- 25 % heigher votes = 25 % more often the minimum VP is reached
-- and votes take 25 % longer to recover in general
+- 26 % heigher votes = 26 % more often the minimum VP is reached
+- and votes take 26 % longer to recover in general
+
+**The bot is voting as expected because there are constantly over 100 posts in the wait list. What if posts get more and more, pile up to 200 in wait line and the bot can't keep up.**
+
+- 101/100 posts already means the next upvote will be decreased by 1%, recovery of VP will be 1% faster, next post can be upvoted 1% earlier.
+- 120/100: next vote -20 %, etc...
+- 200/100 means 100% more posts than desired, vote weight will be reduced by 100% (global min weight of 1% will be used, category based limits could also be used or new ones added for that scenario).
+- To reach 200/100 a dramatic sudden increase would be necessary, so that the gradual decrease of voting weights (from 100% all the way down to 0%) is not fast enough. Hopefully quite unlikely, the larger we set the desired wait list (maybe 500) the more unlikely.
+- There's also an amplifier mechanic to speed up or slow down the adjustment if necessary.
 
 # Adjusting / Fine-Tuning
 
