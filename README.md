@@ -23,15 +23,16 @@ node bot
 
 # Scenarios
 
-Wait List = 100
+- Wait List = 100
+- Min/Max VP = 99/99.9 %
 
 **The bot has voted on a post. There are now only 99 (while desired value X is 100) on the wait list. So the bot will wait for another post to get approved. What if there's no new approved post for over 24h?**
 
-- the voting power reaches its max value (let's say 99.9 %) maybe 15 times (without ever reaching 100 % !): this forces 15 votes, 84 posts left.
+- the voting power reaches its max value (99.9 %) maybe 15 times (without ever reaching 100 % !): this forces 15 votes, 84 posts left.
 - 10 post reach the maximum date: forces 10 votes, 74 left
 - "less competition" -> the voting weights have automatically increased by 26 % by now... 
 - ...slowing the bot down to let the wait list fill up again.
-- 26 % heigher votes = minimum voting power (let's say 99 %) is reached more often
+- 26 % heigher votes = minimum voting power (99 %) is reached more often
 - and votes take 26 % longer to recover in general
 
 **The bot is voting as expected because there are constantly over 100 posts in the wait list. What if posts get more and more, pile up to 200 in the wait list and the bot can't keep up?**
