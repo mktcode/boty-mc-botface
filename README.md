@@ -32,7 +32,7 @@ node bot
 - 26 % heigher votes = 26 % more often the minimum VP is reached
 - and votes take 26 % longer to recover in general
 
-**The bot is voting as expected because there are constantly over 100 posts in the wait list. What if posts get more and more, pile up to 200 in wait line and the bot can't keep up.**
+**The bot is voting as expected because there are constantly over 100 posts in the wait list. What if posts get more and more, pile up to 200 in the wait list and the bot can't keep up?**
 
 - 101/100 posts already means the next upvote will be decreased by 1%, recovery of VP will be 1% faster, next post can be upvoted 1% earlier.
 - 120/100: next vote -20 %, etc...
