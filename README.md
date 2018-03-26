@@ -41,6 +41,7 @@ Wait List = 100
 - 200/100 means 100% more posts than desired, vote weight will be reduced by 100% (global min weight of 1% will be used, category based limits could also be used or new ones added for that scenario).
 - To reach 200/100 a dramatic sudden increase in approved posts would be necessary, so that the gradual decrease of voting weights (from 100 % all the way down to 1 %) is not fast enough. Hopefully quite unlikely, the larger we set the desired wait list (maybe 500) the more unlikely.
 - There's also an amplifier mechanic to speed up or slow down the adjustment if necessary.
+- This basically means, we can approve as many posts per time T as new approvable ones come in per time T.
 
 # Adjusting / Fine-Tuning
 
