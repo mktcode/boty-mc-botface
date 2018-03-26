@@ -39,7 +39,7 @@ Wait List = 100
 - 101/100 posts already means the next upvote will be decreased by 1%, recovery of VP will be 1% faster, next post can be upvoted 1% earlier.
 - 120/100: next vote -20 %, etc...
 - 200/100 means 100% more posts than desired, vote weight will be reduced by 100% (global min weight of 1% will be used, category based limits could also be used or new ones added for that scenario).
-- To reach 200/100 a dramatic sudden increase would be necessary, so that the gradual decrease of voting weights (from 100% all the way down to 0%) is not fast enough. Hopefully quite unlikely, the larger we set the desired wait list (maybe 500) the more unlikely.
+- To reach 200/100 a dramatic sudden increase would be necessary, so that the gradual decrease of voting weights (from 100 % all the way down to 1 %) is not fast enough. Hopefully quite unlikely, the larger we set the desired wait list (maybe 500) the more unlikely.
 - There's also an amplifier mechanic to speed up or slow down the adjustment if necessary.
 
 # Adjusting / Fine-Tuning
