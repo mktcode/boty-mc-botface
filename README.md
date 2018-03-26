@@ -23,7 +23,7 @@ node bot
 
 # Scenarios
 
-The bot has voted on a post. There are now only 99 on the wait list. 
+The bot has voted on a post. There are now only 99 (while desired value X is 100) on the wait list. 
 What if there's no new approved post for over 24h?
 
 - the voting power triggers the max value maybe 15 times (without reaching 100 %!): forces 15 votes, 85 posts left.
