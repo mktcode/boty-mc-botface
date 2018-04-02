@@ -1,8 +1,15 @@
-const mongoose = require('mongoose');
-const postSchema = require('./model/post');
 const helper = require('./helper');
 
-const DEBUG = process.env.BOT_DEBUG || true;
+const DEBUG = !(process.env.BOT_DEBUG && process.env.BOT_DEBUG === 'no');
+
+console.log('');
+console.log(new Date());
+
+if (DEBUG) {
+  console.log('############################################');
+  console.log('### DEBUG Mode: No votes will be casted. ###');
+  console.log('############################################');
+}
 
 const botKey = process.env.BOT_KEY; // TODO: use SteemConnect instead of SteemJS
 const botAccountName = process.env.BOT_ACCOUNT_NAME || 'mkt';
@@ -21,91 +28,116 @@ const maximumVotingPower = process.env.BOT_MAX_VOTING_POWER || 99.93;
 // should never really happen, but could also be set to a much lower value if possible
 const maxPostAgeForVotes = process.env.BOT_MAX_POST_AGE || 6 * 24; // hours
 
-// the deviation amplifier can adjust how "strong" voting weights will be adjusted automatically,
+// the adjustment amplifier can adjust how "strong" voting weights will be adjusted automatically,
 // in relation to the deviation between the desired and the actual wait list.
-const deviationAmplifier = process.env.BOT_DEVIATION_AMPLIFIER || 1;
+const adjustmentAmplifier = process.env.BOT_ADJUSTMENT_AMPLIFIER || 1;
+
+// if the deviation is above >= 100 %, the voting weight will be the global min or max.
+// here you can limit the maximum adjustment, to deal with large deviations. (only a value < 1 makes sense)
+const maximumAdjustment = process.env.BOT_MAX_ADJUSTMENT || 0.5; // adjust weights by a maximum af 50 %
 
 // global weight boundaries, applied after all adjustments
 const globalMinimumVoteWeight = process.env.BOT_GLOBAL_MIN_VOTE_WEIGHT || 1;
 const globalMaximumVoteWeight = process.env.BOT_GLOBAL_MAX_VOTE_WEIGHT || 50;
 
-// TODO: use API instead of direct DB access
-mongoose.connect('mongodb://localhost/utopian-io');
-const db = mongoose.connection;
-
 // TODO: add more verbose logs
 
-// So, let's connect to the db...
-console.log('Connecting to DB.');
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-  const posts = mongoose.model('post', postSchema);
-  // pull some data
-  console.log('Pulling data.');
-  Promise.all([
-    helper.getCurrentVotingPower(botAccountName, true),
-    helper.getPostsWaitingForUpvote(posts, botAccountName),
-  ]).then(values => {
-    const currentVotingPower = values[0];
-    const postsWaitingForUpvote = values[1];
-    const nextPostToUpvote = postsWaitingForUpvote[0];
+// pull some data
+console.log('Fetching data...');
+Promise.all([
+  helper.getCurrentVotingPower(botAccountName, true),
+  helper.getPostsWaitingForUpvote(botAccountName),
+]).then(values => {
+  const currentVotingPower = values[0];
+  const postsWaitingForUpvote = values[1];
+  const nextPostToUpvote = postsWaitingForUpvote[0];
+  const nextPostMeta = JSON.parse(nextPostToUpvote.json_metadata);
 
-    let castVote = false;
+  let castVote = false;
 
-    console.log('Check voting conditions...');
-    // check voting power first
-    if (currentVotingPower >= minimumVotingPower) {
-      // then check if there are enough posts waiting, to make some calculations based on them
-      if (postsWaitingForUpvote.length >= waitListSize) {
+  console.log('Checking voting conditions...');
+  // check voting power first
+  if (currentVotingPower >= minimumVotingPower) {
+    console.log('Posts waiting for an upvote: ' + postsWaitingForUpvote.length + ' (desired value: ' + waitListSize + ')');
+    // then check if there are enough posts waiting, to make some calculations based on them
+    if (postsWaitingForUpvote.length >= waitListSize) {
+      castVote = true;
+    } else {
+      console.log('Not enough posts waiting for an upvote. (' + postsWaitingForUpvote.length + '/' + waitListSize + ')');
+
+      // force vote if next post gets too old
+      // TODO: maybe this should even overrule minimum voting power... ?
+      if (new Date(nextPostToUpvote.created).getTime() < (new Date()).getTime() - (maxPostAgeForVotes * 60 * 60 * 1000)) {
+        console.log('Force vote because post gets to old. (' + nextPostToUpvote.created + ')');
         castVote = true;
       } else {
-        console.log('Not enough posts waiting for an upvote. (' + postsWaitingForUpvote.length + '/' + waitListSize + ')');
-
-        // force vote if next post gets too old
-        // TODO: maybe this should even overrule minimum voting power... ?
-        if (new Date(nextPostToUpvote.created).getTime() < (new Date()).getTime() - (maxPostAgeForVotes * 60 * 60 * 1000)) {
-          console.log('Force vote because post gets to old. (' + nextPostToUpvote.created + ')');
+        // force vote if voting power gets to high
+        if (currentVotingPower >= maximumVotingPower) {
+          console.log('Force vote because Voting Power gets to high. (' + currentVotingPower.toFixed(2) + '/' + maximumVotingPower + ')');
           castVote = true;
         } else {
-          // force vote if voting power gets to high
-          if (currentVotingPower >= maximumVotingPower) {
-            console.log('Force vote because Voting Power gets to high. (' + currentVotingPower.toFixed(2) + '/' + maximumVotingPower + ')');
-            castVote = true;
-          } else {
-            console.log('No post to upvote. No reason to force.');
-          }
+          console.log('No post to upvote. No reason to force.');
         }
       }
+    }
+  } else {
+    console.log('Voting Power to low: ' + currentVotingPower.toFixed(2) + '%, Waiting to reach ' + minimumVotingPower + '%');
+  }
+
+  if (castVote) {
+    // adjust votes based on the deviation of desired and actual wait list size
+    // 1. calculate deviation
+    // 2. apply amplifier
+    // 3. apply adjustment cap
+    // 4. apply final adjustment
+
+    // calculate deviation percentage (e.g. 0.3 => 30 % deviation)
+    let waitListSizeDeviation = (Math.abs(waitListSize - postsWaitingForUpvote.length) / waitListSize);
+    console.log('Deviation: ' + waitListSizeDeviation);
+
+    // amplify adjustment
+    let amplifiedAdjustment = (waitListSizeDeviation * adjustmentAmplifier);
+    console.log('Amplified Adjustment: ' + amplifiedAdjustment);
+
+    // apply adjustment cap too avoid too drastic adjustments
+    amplifiedAdjustment = amplifiedAdjustment > maximumAdjustment ? maximumAdjustment : amplifiedAdjustment;
+    console.log('Capped Adjustment: ' + amplifiedAdjustment);
+
+    // apply adjustment to weight multiplier
+    // if actual and desired wait list are the same, nothing will happen here
+    let votingWeightMultiplier = 1; // default: * 1 (no change)
+    if (postsWaitingForUpvote.length > waitListSize) {
+      // decrease voting power to vote faster if posts pile up
+      votingWeightMultiplier -= amplifiedAdjustment;
     } else {
-      console.log('Voting Power to low: ' + currentVotingPower.toFixed(2) + '%, Waiting to reach ' + minimumVotingPower + '%');
+      // increase voting power to vote slower if posts become less
+      votingWeightMultiplier += amplifiedAdjustment;
     }
+    console.log('Final Multiplier: ' + votingWeightMultiplier);
 
-    if (castVote) {
-      // increase/decrease votes by the deviation percentage of desired and actual wait list size
-      let votingWeightMultiplier = 1;
-      let waitListSizeDeviation = (Math.abs(waitListSize - postsWaitingForUpvote.length) / waitListSize); // percentage
-      if (postsWaitingForUpvote.length > waitListSize) {
-        // decrease voting power to vote faster if posts pile up
-        votingWeightMultiplier -= (waitListSizeDeviation * deviationAmplifier);
-      } else {
-        // increase voting power to vote slower if posts become less
-        votingWeightMultiplier += (waitListSizeDeviation * deviationAmplifier);
+    // get vote weight based on category's min and max, review score
+    let voteWeight = helper.getVoteWeightForPost(nextPostToUpvote);
+    // adjust it with the calculated multiplier
+    let adjustedVoteWeight = voteWeight * votingWeightMultiplier;
+    // apply global min/max weight values
+    if (adjustedVoteWeight < globalMinimumVoteWeight) adjustedVoteWeight = globalMinimumVoteWeight;
+    if (adjustedVoteWeight > globalMaximumVoteWeight) adjustedVoteWeight = globalMaximumVoteWeight;
+
+
+    console.log('Post: https://utopian.io/utopian-io/@' + nextPostToUpvote.author + '/' + nextPostToUpvote.permlink);
+    console.log('Category: ' + nextPostMeta.type);
+    console.log('Score: ' + nextPostMeta.score + ' %');
+    console.log('Score-based Voting Weight: ' + voteWeight + ' %');
+    console.log('Adjusted Voting Weight: ' + adjustedVoteWeight + ' %');
+    console.log('Voting at ' + currentVotingPower.toFixed(2) + ' % Voting Power');
+
+    helper.upvotePost(botAccountName, botKey, nextPostToUpvote, parseInt(adjustedVoteWeight * 100)).then(() => {
+      if (!DEBUG) {
+        // TODO: post comment
       }
-
-      // get vote weight based on category's min and max, review score and global min and max
-      let voteWeight = helper.getVoteWeightForPost(nextPostToUpvote) * votingWeightMultiplier;
-      if (voteWeight < globalMinimumVoteWeight) voteWeight = globalMinimumVoteWeight;
-      if (voteWeight > globalMaximumVoteWeight) voteWeight = globalMaximumVoteWeight;
-
-      console.log('Voting on https://utopian.io/utopian-io/@' + nextPostToUpvote.author + '/' + nextPostToUpvote.permlink);
-      console.log('At ' + currentVotingPower.toFixed(2) + '% Voting Power and ' + voteWeight.toFixed(2) + ' % Voting Weight (multiplier: ' + votingWeightMultiplier + ')');
-      helper.upvotePost(botAccountName, botKey, nextPostToUpvote, voteWeight * 100).then(() => {
-        if (!DEBUG) {
-          // TODO: post comment
-        }
-      }).catch(err => console.log(err));
-    }
-
+      process.exit();
+    }).catch(err => console.log(err));
+  } else {
     process.exit();
-  }).catch(err => console.log(err));
-});
+  }
+}).catch(err => console.log(err));

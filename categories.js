@@ -1,18 +1,61 @@
 const categories = {
-  list: ['development', 'graphics', 'suggestion'],
   limits: {
+    ideas: {
+      max: 4,
+      min: 1.5,
+    },
+    'sub-projects': {
+      max: 30,
+      min: 8,
+    },
     development: {
-      min: 10,
-      max: 30
+      max: 30,
+      min: 5,
+    },
+    'bug-hunting': {
+      max: 5,
+      min: 2,
+    },
+    translations: {
+      max: 12,
+      min: 7,
     },
     graphics: {
-      min: 7,
-      max: 25
+      max: 30,
+      min: 7.5,
     },
-    suggestion: {
-      min: 1,
-      max: 5
-    }
+    analysis: {
+      max: 20,
+      min: 8,
+    },
+    social: {
+      max: 20,
+      min: 5,
+    },
+    documentation: {
+      max: 20,
+      min: 5,
+    },
+    tutorials: {
+      max: 15,
+      min: 7,
+    },
+    'video-tutorials': {
+      max: 15,
+      min: 8,
+    },
+    copywriting: {
+      max: 15,
+      min: 5,
+    },
+    blog: {
+      max: 5,
+      min: 2,
+    },
+    'task-requests': {
+      max: 6,
+      min: 3,
+    },
   }
 };
 
