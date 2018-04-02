@@ -61,9 +61,10 @@ const helper = {
         let meta = JSON.parse(post.json_metadata);
         let isUtopianPost = meta.hasOwnProperty('app') && meta.app.indexOf('utopian') !== -1;
         let isApproved = meta.hasOwnProperty('moderator') && meta.moderator.reviewed === true;
+        let hasScore = meta.hasOwnProperty('score') && meta.score > 0 === true;
         let isVoted = this.isVoted(post.active_votes, voterAccount);
 
-        if (postAge < maxAge && isUtopianPost && isApproved && !isVoted) {
+        if (postAge < maxAge && isUtopianPost && isApproved && hasScore && !isVoted) {
           postsWaitingForUpvote.push(post);
         }
       }
