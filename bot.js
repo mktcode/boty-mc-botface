@@ -56,9 +56,9 @@ Promise.all([
   let castVote = false;
 
   console.log('Checking voting conditions...');
+  console.log('Posts waiting for an upvote: ' + postsWaitingForUpvote.length + ' (desired value: ' + waitListSize + ')');
   // check voting power first
   if (currentVotingPower >= minimumVotingPower) {
-    console.log('Posts waiting for an upvote: ' + postsWaitingForUpvote.length + ' (desired value: ' + waitListSize + ')');
     // then check if there are enough posts waiting, to make some calculations based on them
     if (postsWaitingForUpvote.length >= waitListSize) {
       castVote = true;
@@ -127,8 +127,8 @@ Promise.all([
     console.log('Post: https://utopian.io/utopian-io/@' + nextPostToUpvote.author + '/' + nextPostToUpvote.permlink);
     console.log('Category: ' + nextPostMeta.type);
     console.log('Score: ' + nextPostMeta.score + ' %');
-    console.log('Score-based Voting Weight: ' + voteWeight + ' %');
-    console.log('Adjusted Voting Weight: ' + adjustedVoteWeight + ' %');
+    console.log('Score-based Voting Weight: ' + voteWeight.toFixed(2) + ' %');
+    console.log('Adjusted Voting Weight: ' + adjustedVoteWeight.toFixed(2) + ' %');
     console.log('Voting at ' + currentVotingPower.toFixed(2) + ' % Voting Power');
 
     helper.upvotePost(botAccountName, botKey, nextPostToUpvote, parseInt(adjustedVoteWeight * 100)).then(() => {
