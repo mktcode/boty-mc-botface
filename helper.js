@@ -14,8 +14,8 @@ const helper = {
 
     return ((max - min) * (meta.score / 100)) + min;
   },
-  calcRecoveryTime(decrease) {
-    return decrease * 72;
+  calcRecoveryTime(percentage) {
+    return percentage * 72;
   },
   calcDecreaseVP(voteWeight) {
     return 2 * voteWeight / 100;

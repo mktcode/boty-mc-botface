@@ -81,15 +81,17 @@ Promise.all([
       }
     }
   } else {
-    console.log('Voting Power to low: ' + currentVotingPower.toFixed(2) + '%, Waiting to reach ' + minimumVotingPower + '%');
+    console.log('Voting Power to low: ' + currentVotingPower.toFixed(2) + '%, Waiting to reach ' + minimumVotingPower + '% (' + helper.calcRecoveryTime(minimumVotingPower - currentVotingPower).toFixed(2) + ' minutes)');
   }
 
   if (castVote) {
-    // adjust votes based on the deviation of desired and actual wait list size
+    // adjust votes based on the deviation of desired and actual wait list size:
     // 1. calculate deviation
     // 2. apply amplifier
     // 3. apply adjustment cap
-    // 4. apply final adjustment
+    // 4. get score based weight
+    // 5. apply final adjustment
+    // 6. apply global min/max values
 
     // calculate deviation percentage (e.g. 0.3 => 30 % deviation)
     let waitListSizeDeviation = (Math.abs(waitListSize - postsWaitingForUpvote.length) / waitListSize);
@@ -113,7 +115,7 @@ Promise.all([
       // increase voting power to vote slower if posts become less
       votingWeightMultiplier += amplifiedAdjustment;
     }
-    console.log('Final Multiplier: ' + votingWeightMultiplier);
+    console.log('Final Multiplier: ' + votingWeightMultiplier.toFixed(2));
 
     // get vote weight based on category's min and max, review score
     let voteWeight = helper.getVoteWeightForPost(nextPostToUpvote);
@@ -123,8 +125,8 @@ Promise.all([
     if (adjustedVoteWeight < globalMinimumVoteWeight) adjustedVoteWeight = globalMinimumVoteWeight;
     if (adjustedVoteWeight > globalMaximumVoteWeight) adjustedVoteWeight = globalMaximumVoteWeight;
 
-
     console.log('Post: https://utopian.io/utopian-io/@' + nextPostToUpvote.author + '/' + nextPostToUpvote.permlink);
+    console.log('Created: ' + nextPostToUpvote.created);
     console.log('Category: ' + nextPostMeta.type);
     console.log('Score: ' + nextPostMeta.score + ' %');
     console.log('Score-based Voting Weight: ' + voteWeight.toFixed(2) + ' %');
@@ -132,10 +134,16 @@ Promise.all([
     console.log('Voting at ' + currentVotingPower.toFixed(2) + ' % Voting Power');
 
     helper.upvotePost(botAccountName, botKey, nextPostToUpvote, parseInt(adjustedVoteWeight * 100)).then(() => {
-      if (!DEBUG) {
-        // TODO: post comment
-      }
-      process.exit();
+      helper.getCurrentVotingPower(botAccountName, true).then(newVotingPower => {
+        console.log('Done! New Voting Power: ' + newVotingPower.toFixed(2) + ' %');
+        if (newVotingPower < minimumVotingPower) {
+          console.log(helper.calcRecoveryTime(minimumVotingPower - newVotingPower).toFixed(2) + ' minutes to get back to ' + minimumVotingPower + ' %.');
+        }
+        if (!DEBUG) {
+          // TODO: post comment
+        }
+        process.exit();
+      });
     }).catch(err => console.log(err));
   } else {
     process.exit();
