@@ -63,7 +63,7 @@ Promise.all([
     if (postsWaitingForUpvote.length >= waitListSize) {
       castVote = true;
     } else {
-      console.log('Not enough posts waiting for an upvote. (' + postsWaitingForUpvote.length + '/' + waitListSize + ')');
+      console.log('Not enough posts waiting for an upvote.');
 
       // force vote if next post gets too old
       // TODO: maybe this should even overrule minimum voting power... ?
@@ -76,7 +76,7 @@ Promise.all([
           console.log('Force vote because Voting Power gets to high. (' + currentVotingPower.toFixed(2) + '/' + maximumVotingPower + ')');
           castVote = true;
         } else {
-          console.log('No post to upvote. No reason to force.');
+          console.log('No reason to force.');
         }
       }
     }
@@ -137,7 +137,7 @@ Promise.all([
       helper.getCurrentVotingPower(botAccountName, true).then(newVotingPower => {
         console.log('Done! New Voting Power: ' + newVotingPower.toFixed(2) + ' %');
         if (newVotingPower < minimumVotingPower) {
-          console.log(helper.calcRecoveryTime(minimumVotingPower - newVotingPower).toFixed(2) + ' minutes to get back to ' + minimumVotingPower + ' %.');
+          console.log(helper.calcRecoveryTime(minimumVotingPower - newVotingPower).toFixed(2) + ' minutes to get back to ' + minimumVotingPower + ' %');
         }
         if (!DEBUG) {
           // TODO: post comment
