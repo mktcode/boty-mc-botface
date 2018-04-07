@@ -15,30 +15,30 @@ const botKey = process.env.BOT_KEY; // TODO: use SteemConnect instead of SteemJS
 const botAccountName = process.env.BOT_ACCOUNT_NAME || 'mkt';
 
 // minimum number of posts waiting for a vote - don't vote if we are below
-const waitListSize = process.env.BOT_WAIT_LIST_SIZE || 100;
+const waitListSize = parseInt(process.env.BOT_WAIT_LIST_SIZE) || 100;
 
 // also don't vote if we are below
-const minimumVotingPower = process.env.BOT_MIN_VOTING_POWER || 99;
+const minimumVotingPower = parseFloat(process.env.BOT_MIN_VOTING_POWER || 99;
 
 // force vote if we go above - the smaller the bot interval, the closer this can be set to 100%
 // 99.93 = bot needs to run every 5 minutes, to make sure we don't reach 100%
-const maximumVotingPower = process.env.BOT_MAX_VOTING_POWER || 99.93;
+const maximumVotingPower = parseFloat(process.env.BOT_MAX_VOTING_POWER || 99.93;
 
 // force vote if next post gets older than that
 // should never really happen, but could also be set to a much lower value if possible
-const maxPostAgeForVotes = process.env.BOT_MAX_POST_AGE || 6 * 24; // hours
+const maxPostAgeForVotes = parseInt(process.env.BOT_MAX_POST_AGE || 6 * 24; // hours
 
 // the adjustment amplifier can adjust how "strong" voting weights will be adjusted automatically,
 // in relation to the deviation between the desired and the actual wait list.
-const adjustmentAmplifier = process.env.BOT_ADJUSTMENT_AMPLIFIER || 1;
+const adjustmentAmplifier = parseFloat(process.env.BOT_ADJUSTMENT_AMPLIFIER) || 1;
 
 // if the deviation is above >= 100 %, the voting weight will be the global min or max.
 // here you can limit the maximum adjustment, to deal with large deviations. (only a value < 1 makes sense)
-const maximumAdjustment = process.env.BOT_MAX_ADJUSTMENT || 0.5; // adjust weights by a maximum af 50 %
+const maximumAdjustment = parseFloat(process.env.BOT_MAX_ADJUSTMENT) || 0.5; // adjust weights by a maximum af 50 %
 
 // global weight boundaries, applied after all adjustments
-const globalMinimumVoteWeight = process.env.BOT_GLOBAL_MIN_VOTE_WEIGHT || 1;
-const globalMaximumVoteWeight = process.env.BOT_GLOBAL_MAX_VOTE_WEIGHT || 50;
+const globalMinimumVoteWeight = parseFloat(process.env.BOT_GLOBAL_MIN_VOTE_WEIGHT) || 1;
+const globalMaximumVoteWeight = parseFloat(process.env.BOT_GLOBAL_MAX_VOTE_WEIGHT) || 50;
 
 // TODO: add more verbose logs
 
