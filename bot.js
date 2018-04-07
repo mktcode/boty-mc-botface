@@ -18,15 +18,15 @@ const botAccountName = process.env.BOT_ACCOUNT_NAME || 'mkt';
 const waitListSize = parseInt(process.env.BOT_WAIT_LIST_SIZE) || 100;
 
 // also don't vote if we are below
-const minimumVotingPower = parseFloat(process.env.BOT_MIN_VOTING_POWER || 99;
+const minimumVotingPower = parseFloat(process.env.BOT_MIN_VOTING_POWER) || 99;
 
 // force vote if we go above - the smaller the bot interval, the closer this can be set to 100%
 // 99.93 = bot needs to run every 5 minutes, to make sure we don't reach 100%
-const maximumVotingPower = parseFloat(process.env.BOT_MAX_VOTING_POWER || 99.93;
+const maximumVotingPower = parseFloat(process.env.BOT_MAX_VOTING_POWER) || 99.93;
 
 // force vote if next post gets older than that
 // should never really happen, but could also be set to a much lower value if possible
-const maxPostAgeForVotes = parseInt(process.env.BOT_MAX_POST_AGE || 6 * 24; // hours
+const maxPostAgeForVotes = parseInt(process.env.BOT_MAX_POST_AGE) || 6 * 24; // hours
 
 // the adjustment amplifier can adjust how "strong" voting weights will be adjusted automatically,
 // in relation to the deviation between the desired and the actual wait list.
