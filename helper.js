@@ -66,8 +66,8 @@ const helper = {
   getPosts() {
     return new Promise((resolve, reject) => {
       steem.api.getContentReplies(
-        "mkt",
-        "mobile-optimization-hotfix-for-steem-engine-com",
+        "commit-tokens",
+        "commit-tokens-beta-root-post",
         (err, res) => {
           if (!err) {
             resolve(res);
