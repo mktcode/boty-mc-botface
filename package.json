@@ -4,7 +4,6 @@
   "description": "(prototype, does not actually vote)",
   "main": "index.js",
   "dependencies": {
-    "mongoose": "^5.0.11",
     "steem": "^0.7.1"
   },
   "devDependencies": {},
