@@ -4,6 +4,7 @@
   "description": "(prototype, does not actually vote)",
   "main": "index.js",
   "dependencies": {
+    "dotenv": "^8.0.0",
     "steem": "^0.7.1"
   },
   "devDependencies": {},

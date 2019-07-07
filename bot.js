@@ -1,4 +1,5 @@
 const helper = require("./helper");
+require("dotenv").config();
 
 const DEBUG = !(process.env.BOT_DEBUG && process.env.BOT_DEBUG === "no");
 
