@@ -1,6 +1,6 @@
 const steem = require("steem");
 const fs = require("fs");
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + "/.env" });
 
 const DEBUG = !(process.env.BOT_DEBUG && process.env.BOT_DEBUG === "no");
 
