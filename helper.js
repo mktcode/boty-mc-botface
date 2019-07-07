@@ -66,8 +66,8 @@ const helper = {
   getPosts() {
     return new Promise((resolve, reject) => {
       steem.api.getContentReplies(
-        "commit-tokens",
-        "commit-tokens-beta-root-post",
+        "merge-rewards",
+        "merge-rewards-beta-root-post",
         (err, res) => {
           if (!err) {
             resolve(res);
