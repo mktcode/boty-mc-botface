@@ -53,11 +53,15 @@ const helper = {
       let postAge = new Date().getTime() - new Date(post.created).getTime();
       let meta = JSON.parse(post.json_metadata);
       let hasScore = meta.hasOwnProperty("score") && meta.score > 0 === true;
-      let isVoted = this.isVoted(post.active_votes, voterAccount);
       let isInDatabase = database.find(pr => pr.id === meta.prId);
 
-      if (isInDatabase && postAge < maxAge && hasScore && !isVoted) {
-        postsWaitingForUpvote.push(post);
+      if (isInDatabase && postAge < maxAge && hasScore) {
+        let isVoted = await this.isVoted(
+          post.author,
+          post.permlink,
+          voterAccount
+        );
+        if (!isVoted) postsWaitingForUpvote.push(post);
       }
     }
 
@@ -78,13 +82,22 @@ const helper = {
       );
     });
   },
-  isVoted(activeVotes, voterAccount) {
-    let voted = false;
-    for (let i = 0; i < activeVotes.length; i++) {
-      if (activeVotes[i].voter === voterAccount) {
-        voted = true;
-      }
-    }
+  isVoted(author, permlink, voterAccount) {
+    return new Promise((resolve, reject) => {
+      steem.api.getActiveVotes(author, permlink, function(err, activeVotes) {
+        if (!err) {
+          let voted = false;
+          for (let i = 0; i < activeVotes.length; i++) {
+            if (activeVotes[i].voter === voterAccount) {
+              voted = true;
+            }
+          }
+          resolve(voted);
+        } else {
+          reject(err);
+        }
+      });
+    });
     return voted;
   },
   upvotePost(voter, key, post, weight) {
