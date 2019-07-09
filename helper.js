@@ -53,7 +53,7 @@ const helper = {
       let postAge = new Date().getTime() - new Date(post.created).getTime();
       let meta = JSON.parse(post.json_metadata);
       let hasScore = meta.hasOwnProperty("score") && meta.score > 0 === true;
-      let isInDatabase = database.find(pr => pr.id === meta.prId);
+      let isInDatabase = database.find(pr => pr.id === meta.id);
 
       if (isInDatabase && postAge < maxAge && hasScore) {
         let isVoted = await this.isVoted(
