@@ -102,40 +102,30 @@ const helper = {
   },
   upvotePost(voter, key, post, weight) {
     return new Promise((resolve, reject) => {
-      steem.api.getActiveVotes(
-        post.author,
-        post.permlink,
-        (err, activeVotes) => {
-          if (!err) {
-            if (!this.isVoted(activeVotes, voter)) {
-              if (!DEBUG) {
-                steem.broadcast.vote(
-                  key,
-                  voter,
-                  post.author,
-                  post.permlink,
-                  weight,
-                  (err, result) => {
-                    if (!err) {
-                      resolve(result);
-                    } else {
-                      reject(err);
-                    }
-                  }
-                );
-              } else {
-                resolve();
+      this.isVoted(post.author, post.permlink, voter).then(isVoted => {
+        if (!isVoted) {
+          if (!DEBUG) {
+            steem.broadcast.vote(
+              key,
+              voter,
+              post.author,
+              post.permlink,
+              weight,
+              (err, result) => {
+                if (!err) {
+                  resolve(result);
+                } else {
+                  reject(err);
+                }
               }
-            } else {
-              console.log(
-                "Already voted on " + post.author + "/" + post.permlink
-              );
-            }
+            );
           } else {
-            reject(err);
+            resolve();
           }
+        } else {
+          console.log("Already voted on " + post.author + "/" + post.permlink);
         }
-      );
+      });
     });
   }
 };
