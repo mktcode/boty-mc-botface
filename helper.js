@@ -10,6 +10,9 @@ const helper = {
       fs.readFileSync(process.env.DATABASE, { encoding: "utf-8" })
     );
   },
+  updateDatabase(database) {
+    fs.writeFileSync(process.env.DATABASE, JSON.stringify(database, null, 2));
+  },
   getVoteWeightForPost(post) {
     let meta = JSON.parse(post.json_metadata);
     return meta.score;
