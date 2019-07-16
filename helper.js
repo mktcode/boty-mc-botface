@@ -5,13 +5,18 @@ require("dotenv").config({ path: __dirname + "/.env" });
 const DEBUG = !(process.env.BOT_DEBUG && process.env.BOT_DEBUG === "no");
 
 const helper = {
-  getDatabase() {
+  getDatabase(table) {
     return JSON.parse(
-      fs.readFileSync(process.env.DATABASE, { encoding: "utf-8" })
+      fs.readFileSync(process.env.DATABASE + "/" + table + ".json", {
+        encoding: "utf-8"
+      })
     );
   },
-  updateDatabase(database) {
-    fs.writeFileSync(process.env.DATABASE, JSON.stringify(database, null, 2));
+  updateDatabase(table, data) {
+    fs.writeFileSync(
+      process.env.DATABASE + "/" + table + ".json",
+      JSON.stringify(data, null, 2)
+    );
   },
   getVoteWeightForPost(post) {
     let meta = JSON.parse(post.json_metadata);
@@ -49,12 +54,15 @@ const helper = {
     const postsWaitingForUpvote = [];
     const maxAge = 6.4 * 24 * 60 * 60 * 1000;
     const posts = await this.getPosts();
-    const database = this.getDatabase();
+    const database = this.getDatabase("claims");
 
     for (let i = 0; i < posts.length; i++) {
       let post = posts[i];
       let postAge = new Date().getTime() - new Date(post.created).getTime();
-      let meta = JSON.parse(post.json_metadata);
+      let meta = {};
+      try {
+        meta = JSON.parse(post.json_metadata);
+      } catch (e) {}
       let hasScore = meta.hasOwnProperty("score") && meta.score > 0 === true;
       let isInDatabase = database.find(pr => pr.id === meta.id);
 

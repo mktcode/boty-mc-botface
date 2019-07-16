@@ -2,7 +2,7 @@ const steem = require("steem");
 const helper = require("./helper");
 require("dotenv").config({ path: __dirname + "/.env" });
 
-const database = helper.getDatabase();
+const database = helper.getDatabase("claims");
 const pendingPRs = database.filter(pr => pr.rewards === null);
 
 const requests = [];
@@ -31,5 +31,5 @@ pendingPRs.forEach(pr => {
 });
 
 Promise.all(requests).then(() => {
-  helper.updateDatabase(database);
+  helper.updateDatabase("claims", database);
 });
