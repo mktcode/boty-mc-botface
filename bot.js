@@ -51,14 +51,13 @@ const globalMaximumVoteWeight =
 console.log("Fetching data...");
 Promise.all([
   helper.getCurrentVotingPower(botAccountName, true),
-  helper.getPostsWaitingForUpvote(botAccountName)
+  helper.getPostsWaitingForUpvote()
 ])
   .then(values => {
     const currentVotingPower = values[0];
     const postsWaitingForUpvote = values[1];
     if (postsWaitingForUpvote.length) {
       const nextPostToUpvote = postsWaitingForUpvote[0];
-      const nextPostMeta = JSON.parse(nextPostToUpvote.json_metadata);
 
       let castVote = false;
 
@@ -81,12 +80,12 @@ Promise.all([
           // force vote if next post gets too old
           // TODO: maybe this should even overrule minimum voting power... ?
           if (
-            new Date(nextPostToUpvote.created).getTime() <
+            nextPostToUpvote.createdAt.getTime() <
             new Date().getTime() - maxPostAgeForVotes * 60 * 60 * 1000
           ) {
             console.log(
               "Force vote because post gets to old. (" +
-                nextPostToUpvote.created +
+                nextPostToUpvote.createdAt +
                 ")"
             );
             castVote = true;
@@ -132,7 +131,7 @@ Promise.all([
         // calculate deviation percentage (e.g. 0.3 => 30 % deviation)
         let waitListSizeDeviation =
           Math.abs(waitListSize - postsWaitingForUpvote.length) / waitListSize;
-        console.log("Deviation: " + waitListSizeDeviation);
+        console.log("Waitlist Deviation: " + waitListSizeDeviation);
 
         // amplify adjustment
         let amplifiedAdjustment = waitListSizeDeviation * adjustmentAmplifier;
@@ -157,8 +156,11 @@ Promise.all([
         }
         console.log("Final Multiplier: " + votingWeightMultiplier.toFixed(2));
 
-        // get vote weight based on category's min and max, review score
-        let voteWeight = helper.getVoteWeightForPost(nextPostToUpvote);
+        // get vote weight based on score
+        let voteWeight = helper.getVoteWeightForScore(
+          nextPostToUpvote.score,
+          globalMaximumVoteWeight
+        );
         // adjust it with the calculated multiplier
         let adjustedVoteWeight = voteWeight * votingWeightMultiplier;
         // apply global min/max weight values
@@ -168,10 +170,13 @@ Promise.all([
           adjustedVoteWeight = globalMaximumVoteWeight;
 
         console.log(
-          "Post: @" + nextPostToUpvote.author + "/" + nextPostToUpvote.permlink
+          "Post: @" +
+            nextPostToUpvote.steemUser +
+            "/" +
+            nextPostToUpvote.permlink
         );
-        console.log("Created: " + nextPostToUpvote.created);
-        console.log("Score: " + nextPostMeta.score + " %");
+        console.log("Created: " + nextPostToUpvote.createdAt);
+        console.log("Score: " + nextPostToUpvote.score + " %");
         console.log(
           "Score-based Voting Weight: " + voteWeight.toFixed(2) + " %"
         );
@@ -186,7 +191,8 @@ Promise.all([
           .upvotePost(
             botAccountName,
             botKey,
-            nextPostToUpvote,
+            nextPostToUpvote.steemUser,
+            nextPostToUpvote.permlink,
             parseInt(adjustedVoteWeight * 100)
           )
           .then(() => {
@@ -207,7 +213,7 @@ Promise.all([
                   );
                 }
                 if (!DEBUG) {
-                  // TODO: post comment
+                  // TODO: post comment, for now let's better save on RC
                 }
                 process.exit();
               });

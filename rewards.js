@@ -1,35 +1,70 @@
 const steem = require("steem");
 const helper = require("./helper");
+const mysql = require("mysql");
 require("dotenv").config({ path: __dirname + "/.env" });
 
-const database = helper.getDatabase("claims");
-const pendingPRs = database.filter(pr => pr.rewards === null);
-
-const requests = [];
-pendingPRs.forEach(pr => {
-  requests.push(
-    new Promise(resolve => {
-      // resolve in any case
-      steem.api.getContent(pr.steemUser, pr.permlink, (err, result) => {
-        if (!err) {
-          if (result.last_payout === "1970-01-01T00:00:00") {
-            // not payed out yet
-            // total payout - 25% curator rewards (* 0.75)
-            let pendingRewards = result.pending_payout_value.split(" ")[0];
-            pendingRewards = parseFloat(result.pending_payout_value) * 0.75;
-            pr.pendingRewards = pendingRewards.toFixed(3) + " SBD";
-          } else {
-            // payed out, curator rewards are already substracted
-            pr.rewards = result.total_payout_value;
-            pr.pendingRewards = null;
-          }
-        }
-        resolve();
-      });
-    })
-  );
+database = mysql.createConnection({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME
 });
 
-Promise.all(requests).then(() => {
-  helper.updateDatabase("claims", database);
+const QUERY_PENDING_CLAIMS = "SELECT * FROM claims WHERE rewards IS NULL";
+const UPDATE_CLAIM =
+  "UPDATE claims SET rewards = ?, pendingRewards = ? WHERE id = ?";
+
+database.query(QUERY_PENDING_CLAIMS, (error, claims) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log("Found " + claims.length + " comments to check.");
+    const updates = [];
+    claims.forEach(claim => {
+      updates.push(
+        new Promise(resolve => {
+          steem.api.getContent(
+            claim.steemUser,
+            claim.permlink,
+            (error, comment) => {
+              if (error) {
+                console.log(error);
+                resolve();
+              } else {
+                let rewards, pendingRewards;
+                if (comment.last_payout === "1970-01-01T00:00:00") {
+                  // not payed out yet
+                  // total payout - 25% curator rewards (* 0.75) and minus SP part (/ 2)
+                  pendingRewards = comment.pending_payout_value.split(" ")[0];
+                  pendingRewards = (parseFloat(pendingRewards) * 0.75) / 2;
+                } else {
+                  // payed out, curator rewards are already substracted
+                  rewards = comment.total_payout_value.split(" ")[0];
+                  rewards = parseFloat(rewards) / 2;
+                }
+                if (rewards > 0 || pendingRewards > 0) {
+                  database.query(
+                    UPDATE_CLAIM,
+                    [rewards, pendingRewards, claim.id],
+                    error => {
+                      if (error) {
+                        console.log(error);
+                      }
+                      resolve();
+                    }
+                  );
+                } else {
+                  resolve();
+                }
+              }
+            }
+          );
+        })
+      );
+    });
+
+    Promise.all(updates).finally(() => {
+      process.exit();
+    });
+  }
 });

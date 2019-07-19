@@ -1,32 +1,26 @@
 const steem = require("steem");
 const fs = require("fs");
+const mysql = require("mysql");
 require("dotenv").config({ path: __dirname + "/.env" });
 
 const DEBUG = !(process.env.BOT_DEBUG && process.env.BOT_DEBUG === "no");
 
+database = mysql.createConnection({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME
+});
+
+const QUERY_UNVOTED_CLAIMS =
+  "SELECT score, steemUser, permlink, createdAt FROM claims WHERE createdAt > DATE_SUB(NOW(), INTERVAL 24 * 6.5 hour) ORDER BY createdAt ASC";
+
 const helper = {
-  getDatabase(table) {
-    return JSON.parse(
-      fs.readFileSync(process.env.DATABASE + "/" + table + ".json", {
-        encoding: "utf-8"
-      })
-    );
-  },
-  updateDatabase(table, data) {
-    fs.writeFileSync(
-      process.env.DATABASE + "/" + table + ".json",
-      JSON.stringify(data, null, 2)
-    );
-  },
-  getVoteWeightForPost(post) {
-    let meta = JSON.parse(post.json_metadata);
-    return meta.score;
+  getVoteWeightForScore(score, maxVoteWeight) {
+    return (score * maxVoteWeight) / 100;
   },
   calcRecoveryTime(percentage) {
     return percentage * 72;
-  },
-  calcDecreaseVP(voteWeight) {
-    return (2 * voteWeight) / 100;
   },
   getCurrentVotingPower(account, humanReadable = false) {
     return new Promise((resolve, reject) => {
@@ -50,47 +44,15 @@ const helper = {
       });
     });
   },
-  async getPostsWaitingForUpvote(voterAccount) {
-    const postsWaitingForUpvote = [];
-    const maxAge = 6.4 * 24 * 60 * 60 * 1000;
-    const posts = await this.getPosts();
-    const database = this.getDatabase("claims");
-
-    for (let i = 0; i < posts.length; i++) {
-      let post = posts[i];
-      let postAge = new Date().getTime() - new Date(post.created).getTime();
-      let meta = {};
-      try {
-        meta = JSON.parse(post.json_metadata);
-      } catch (e) {}
-      let hasScore = meta.hasOwnProperty("score") && meta.score > 0 === true;
-      let isInDatabase = database.find(pr => pr.id === meta.id);
-
-      if (isInDatabase && postAge < maxAge && hasScore) {
-        let isVoted = await this.isVoted(
-          post.author,
-          post.permlink,
-          voterAccount
-        );
-        if (!isVoted) postsWaitingForUpvote.push(post);
-      }
-    }
-
-    return postsWaitingForUpvote.reverse(); // reverse to have oldest post first
-  },
-  getPosts() {
+  getPostsWaitingForUpvote() {
     return new Promise((resolve, reject) => {
-      steem.api.getContentReplies(
-        "merge-rewards",
-        "merge-rewards-beta-root-post",
-        (err, res) => {
-          if (!err) {
-            resolve(res);
-          } else {
-            reject(err);
-          }
+      database.query(QUERY_UNVOTED_CLAIMS, (error, claims) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(claims);
         }
-      );
+      });
     });
   },
   isVoted(author, permlink, voterAccount) {
@@ -111,16 +73,16 @@ const helper = {
     });
     return voted;
   },
-  upvotePost(voter, key, post, weight) {
+  upvotePost(voter, key, author, permlink, weight) {
     return new Promise((resolve, reject) => {
-      this.isVoted(post.author, post.permlink, voter).then(isVoted => {
+      this.isVoted(author, permlink, voter).then(isVoted => {
         if (!isVoted) {
           if (!DEBUG) {
             steem.broadcast.vote(
               key,
               voter,
-              post.author,
-              post.permlink,
+              author,
+              permlink,
               weight,
               (err, result) => {
                 if (!err) {
@@ -134,7 +96,7 @@ const helper = {
             resolve();
           }
         } else {
-          console.log("Already voted on " + post.author + "/" + post.permlink);
+          console.log("Already voted on " + author + "/" + permlink);
         }
       });
     });
