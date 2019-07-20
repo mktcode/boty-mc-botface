@@ -197,6 +197,11 @@ Promise.all([
           )
           .then(() => {
             helper
+              .updateClaimVote(nextPostToUpvote.id, adjustedVoteWeight)
+              .then(() => {
+                console.log("Updated claim vote in database.");
+              });
+            helper
               .getCurrentVotingPower(botAccountName, true)
               .then(newVotingPower => {
                 console.log(

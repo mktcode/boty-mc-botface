@@ -13,7 +13,9 @@ database = mysql.createConnection({
 });
 
 const QUERY_UNVOTED_CLAIMS =
-  "SELECT score, steemUser, permlink, createdAt FROM claims WHERE createdAt > DATE_SUB(NOW(), INTERVAL 24 * 6.5 hour) ORDER BY createdAt ASC";
+  "SELECT id, score, steemUser, permlink, createdAt FROM claims WHERE votedAt IS NULL AND createdAt > DATE_SUB(NOW(), INTERVAL 24 * 6.5 hour) ORDER BY createdAt ASC";
+const UPDATE_CLAIM_VOTE =
+  "UPDATE claims SET votedAt = NOW(), vote = ? WHERE id = ?";
 
 const helper = {
   getVoteWeightForScore(score, maxVoteWeight) {
@@ -97,6 +99,17 @@ const helper = {
           }
         } else {
           console.log("Already voted on " + author + "/" + permlink);
+        }
+      });
+    });
+  },
+  updateClaimVote(id, vote) {
+    return new Promise((resolve, reject) => {
+      database.query(UPDATE_CLAIM_VOTE, [vote, id], error => {
+        if (error) {
+          reject();
+        } else {
+          resolve();
         }
       });
     });
