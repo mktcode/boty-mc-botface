@@ -3,7 +3,7 @@ const helper = require("./helper");
 const mysql = require("mysql");
 require("dotenv").config({ path: __dirname + "/.env" });
 
-database = mysql.createConnection({
+const database = mysql.createConnection({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
