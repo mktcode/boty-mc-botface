@@ -31,7 +31,8 @@ database.query(QUERY_PENDING_CLAIMS, (error, claims) => {
                 console.log(error);
                 resolve();
               } else {
-                let rewards, pendingRewards;
+                let rewards = null;
+                let pendingRewards = null;
                 if (comment.last_payout === "1970-01-01T00:00:00") {
                   // not payed out yet
                   // total payout - 25% curator rewards (* 0.75) and minus SP part (/ 2)
@@ -42,20 +43,16 @@ database.query(QUERY_PENDING_CLAIMS, (error, claims) => {
                   rewards = comment.total_payout_value.split(" ")[0];
                   rewards = parseFloat(rewards) / 2;
                 }
-                if (rewards > 0 || pendingRewards > 0) {
-                  database.query(
-                    UPDATE_CLAIM,
-                    [rewards, pendingRewards, claim.id],
-                    error => {
-                      if (error) {
-                        console.log(error);
-                      }
-                      resolve();
+                database.query(
+                  UPDATE_CLAIM,
+                  [rewards, pendingRewards, claim.id],
+                  error => {
+                    if (error) {
+                      console.log(error);
                     }
-                  );
-                } else {
-                  resolve();
-                }
+                    resolve();
+                  }
+                );
               }
             }
           );
