@@ -17,6 +17,7 @@ const UPDATE_CLAIM =
 database.query(QUERY_PENDING_CLAIMS, (error, claims) => {
   if (error) {
     console.log(error);
+    database.end();
   } else {
     console.log("Found " + claims.length + " comments to check.");
     const updates = [];

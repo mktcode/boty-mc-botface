@@ -68,11 +68,13 @@ const getSbdTransactions = dateLimit => {
 database.query(QUERY_OLDEST_OPEN_BOUNTY_DATE, (error, result) => {
   if (error) {
     console.log(error);
+    database.end();
   } else {
     const oldestDate = result[0].oldestDate;
     database.query(QUERY_OPEN_BOUNTIES, [oldestDate], (error, openBounties) => {
       if (error) {
         console.log(error);
+        database.end();
       } else {
         if (openBounties.length) {
           Promise.all([
@@ -81,6 +83,7 @@ database.query(QUERY_OLDEST_OPEN_BOUNTY_DATE, (error, result) => {
           ]).then(results => {
             const blocktradesTransactions = results[0];
             const sbdTransactions = results[1];
+            const queries = [];
             blocktradesTransactions.forEach(bt => {
               const receivingBounty = openBounties.find(ob => {
                 return (
@@ -98,30 +101,36 @@ database.query(QUERY_OLDEST_OPEN_BOUNTY_DATE, (error, result) => {
               });
 
               if (receivingBounty) {
-                database.query(
-                  QUERY_BOUNTY_DEPOSIT_EXISTS,
-                  [bt.transactionId],
-                  (error, result) => {
-                    if (error) {
-                      console.log(error);
-                    } else if (!result.length) {
-                      database.query(
-                        INSERT_BOUNTY_DEPOSIT,
-                        [
-                          bt.inputAddress,
-                          bt.outputAmount,
-                          bt.inputCoinType,
-                          receivingBounty.id,
-                          bt.transactionId
-                        ],
-                        error => {
-                          if (error) {
-                            console.log(error);
-                          }
+                queries.push(
+                  new Promise((resolve, reject) => {
+                    database.query(
+                      QUERY_BOUNTY_DEPOSIT_EXISTS,
+                      [bt.transactionId],
+                      (error, result) => {
+                        if (error) {
+                          reject(error);
+                        } else if (!result.length) {
+                          database.query(
+                            INSERT_BOUNTY_DEPOSIT,
+                            [
+                              bt.inputAddress,
+                              bt.outputAmount,
+                              bt.inputCoinType,
+                              receivingBounty.id,
+                              bt.transactionId
+                            ],
+                            error => {
+                              if (error) {
+                                reject(error);
+                              } else {
+                                resolve();
+                              }
+                            }
+                          );
                         }
-                      );
-                    }
-                  }
+                      }
+                    );
+                  })
                 );
               }
             });
@@ -131,34 +140,49 @@ database.query(QUERY_OLDEST_OPEN_BOUNTY_DATE, (error, result) => {
               });
 
               if (receivingBounty) {
-                database.query(
-                  QUERY_BOUNTY_DEPOSIT_EXISTS,
-                  [t[1].trx_id],
-                  (error, result) => {
-                    if (error) {
-                      console.log(error);
-                    } else if (!result.length) {
-                      database.query(
-                        INSERT_BOUNTY_DEPOSIT,
-                        [
-                          t[1].op[1].memo,
-                          parseFloat(t[1].op[1].amount.replace(" SBD", "")),
-                          "sbd",
-                          receivingBounty.id,
-                          t[1].trx_id
-                        ],
-                        error => {
-                          if (error) {
-                            console.log(error);
-                          }
+                queries.push(
+                  new Promise((resolve, reject) => {
+                    database.query(
+                      QUERY_BOUNTY_DEPOSIT_EXISTS,
+                      [t[1].trx_id],
+                      (error, result) => {
+                        if (error) {
+                          reject(error);
+                        } else if (!result.length) {
+                          database.query(
+                            INSERT_BOUNTY_DEPOSIT,
+                            [
+                              t[1].op[1].memo,
+                              parseFloat(t[1].op[1].amount.replace(" SBD", "")),
+                              "sbd",
+                              receivingBounty.id,
+                              t[1].trx_id
+                            ],
+                            error => {
+                              if (error) {
+                                reject(error);
+                              } else {
+                                resolve();
+                              }
+                            }
+                          );
                         }
-                      );
-                    }
-                  }
+                      }
+                    );
+                  })
                 );
               }
             });
+            Promise.all(queries)
+              .catch(errors => {
+                console.log(errors);
+              })
+              .finally(() => {
+                database.end();
+              });
           });
+        } else {
+          database.end();
         }
       }
     });
