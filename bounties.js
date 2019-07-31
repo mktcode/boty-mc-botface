@@ -127,6 +127,8 @@ database.query(QUERY_OLDEST_OPEN_BOUNTY_DATE, (error, result) => {
                               }
                             }
                           );
+                        } else {
+                          resolve();
                         }
                       }
                     );
@@ -166,6 +168,8 @@ database.query(QUERY_OLDEST_OPEN_BOUNTY_DATE, (error, result) => {
                               }
                             }
                           );
+                        } else {
+                          resolve();
                         }
                       }
                     );
