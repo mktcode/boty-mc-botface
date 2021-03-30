@@ -4,7 +4,7 @@
   "description": "(prototype, does not actually vote)",
   "main": "index.js",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "dotenv": "^8.0.0",
     "mysql": "^2.17.1",
     "steem": "^0.7.1"
